@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Отчет привычек</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --card:#121924;
+      --text:#e8eef6;
+      --muted:#9fb0c3;
+      --stroke:#223042;
+      --accent:#4da3ff;
+      --danger:#ff5d5d;
+      --radius:16px;
+    }
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      background: radial-gradient(1200px 800px at 10% 0%, #0f1a2a 0%, var(--bg) 45%) fixed;
+      color:var(--text);
+      font-family: ui-sans-serif, -apple-system, system-ui, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    .wrap{
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 18px 14px 28px;
+    }
+    .title{
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      margin: 8px 4px 14px;
+    }
+    .sub{
+      color:var(--muted);
+      margin: 0 4px 18px;
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .grid{
+      display:grid;
+      gap:12px;
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      padding: 14px;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+    }
+    .card h2{
+      font-size: 16px;
+      margin: 2px 0 12px;
+      font-weight: 700;
+    }
+    .row{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    @media (min-width: 720px){
+      .row.two{ grid-template-columns: 1fr 1fr; }
+      .row.three{ grid-template-columns: 1fr 1fr 1fr; }
+    }
+    label{
+      display:block;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    select, textarea{
+      width:100%;
+      padding: 12px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--stroke);
+      background: rgba(0,0,0,0.25);
+      color: var(--text);
+      outline:none;
+      font-size: 16px;
+    }
+    textarea{
+      min-height: 110px;
+      resize: vertical;
+      line-height: 1.35;
+    }
+
+    .options{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+    .chip{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke);
+      background: rgba(0,0,0,0.22);
+      cursor:pointer;
+      user-select:none;
+    }
+    .chip input{
+      width:20px;
+      height:20px;
+      accent-color: var(--accent);
+      cursor:pointer;
+    }
+    .chip span{
+      font-size: 15px;
+      color: var(--text);
+    }
+
+    .footer{
+      display:flex;
+      gap:12px;
+      margin-top: 14px;
+      position: sticky;
+      bottom: 10px;
+      padding-bottom: 6px;
+    }
+    .btn{
+      width:100%;
+      padding: 14px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--stroke);
+      background: rgba(0,0,0,0.25);
+      color: var(--text);
+      font-size: 16px;
+      font-weight: 700;
+      cursor:pointer;
+    }
+    .btn.primary{
+      border-color: rgba(77,163,255,0.45);
+      background: linear-gradient(180deg, rgba(77,163,255,0.22), rgba(77,163,255,0.10));
+    }
+    .btn:active{ transform: translateY(1px); }
+    .hint{
+      color: var(--muted);
+      font-size: 12px;
+      margin: 8px 4px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="title">Ежедневный отчет</div>
+    <div class="sub">Заполните пункты и нажмите “Отправить”. Данные уйдут в бот и сохранятся в CSV.</div>
+
+    <div class="grid">
+
+      <div class="card">
+        <h2>Вера</h2>
+
+        <div class="row two">
+          <div>
+            <label>Молитва</label>
+            <div class="options" data-type="radio" data-name="faith_prayer">
+              <label class="chip"><input type="radio" name="faith_prayer" value="Полная"><span>Полная</span></label>
+              <label class="chip"><input type="radio" name="faith_prayer" value="Краткая"><span>Краткая</span></label>
+              <label class="chip"><input type="radio" name="faith_prayer" value="Нет"><span>Нет</span></label>
+            </div>
+          </div>
+
+          <div>
+            <label>Храм</label>
+            <div class="options" data-type="radio" data-name="faith_temple">
+              <label class="chip"><input type="radio" name="faith_temple" value="Служба"><span>Служба</span></label>
+              <label class="chip"><input type="radio" name="faith_temple" value="Часть"><span>Часть</span></label>
+              <label class="chip"><input type="radio" name="faith_temple" value="Нет"><span>Нет</span></label>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>Причастие</label>
+            <div class="options">
+              <label class="chip"><input type="checkbox" id="faith_communion"><span>Да</span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="card">
+        <h2>Физкультура</h2>
+
+        <div class="row two">
+          <div>
+            <label>Прогулка</label>
+            <select id="fitness_walk">
+              <option value="" selected>—</option>
+              <option value="<5к">&lt;5к</option>
+              <option value="5-10к">5-10к</option>
+              <option value=">10к">&gt;10к</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Отметки</label>
+            <div class="options">
+              <label class="chip"><input type="checkbox" id="fitness_warmup"><span>Зарядка</span></label>
+              <label class="chip"><input type="checkbox" id="fitness_extra_activity"><span>Доп. активность</span></label>
+              <label class="chip"><input type="checkbox" id="fitness_training"><span>Тренировка</span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="card">
+        <h2>Сон</h2>
+
+        <div class="row two">
+          <div>
+            <label>Длительность</label>
+            <select id="sleep_duration">
+              <option value="" selected>—</option>
+              <option value="<7ч">&lt;7ч</option>
+              <option value="8ч">8ч</option>
+              <option value=">8ч">&gt;8ч</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Качество</label>
+            <div class="options" data-type="radio" data-name="sleep_quality">
+              <label class="chip"><input type="radio" name="sleep_quality" value="Хорошо"><span>Хорошо</span></label>
+              <label class="chip"><input type="radio" name="sleep_quality" value="Средне"><span>Средне</span></label>
+              <label class="chip"><input type="radio" name="sleep_quality" value="Плохо"><span>Плохо</span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="card">
+        <h2>Питание</h2>
+
+        <div class="row two">
+          <div>
+            <label>Перекусы</label>
+            <div class="options" data-type="radio" data-name="food_snacks">
+              <label class="chip"><input type="radio" name="food_snacks" value="Много"><span>Много</span></label>
+              <label class="chip"><input type="radio" name="food_snacks" value="Мало"><span>Мало</span></label>
+              <label class="chip"><input type="radio" name="food_snacks" value="Нет"><span>Нет</span></label>
+            </div>
+          </div>
+
+          <div>
+            <label>Фастфуд</label>
+            <div class="options" data-type="radio" data-name="food_fastfood">
+              <label class="chip"><input type="radio" name="food_fastfood" value="Много"><span>Много</span></label>
+              <label class="chip"><input type="radio" name="food_fastfood" value="Мало"><span>Мало</span></label>
+              <label class="chip"><input type="radio" name="food_fastfood" value="Нет"><span>Нет</span></label>
+            </div>
+          </div>
+        </div>
+
+        <div class="row two">
+          <div>
+            <label>4 приема пищи</label>
+            <div class="options">
+              <label class="chip"><input type="checkbox" id="food_4meals"><span>Да</span></label>
+            </div>
+          </div>
+
+          <div>
+            <label>Сладкое</label>
+            <div class="options" data-type="radio" data-name="food_sweets">
+              <label class="chip"><input type="radio" name="food_sweets" value="Много"><span>Много</span></label>
+              <label class="chip"><input type="radio" name="food_sweets" value="Мало"><span>Мало</span></label>
+              <label class="chip"><input type="radio" name="food_sweets" value="Нет"><span>Нет</span></label>
+            </div>
+          </div>
+        </div>
+
+        <div class="row two">
+          <div>
+            <label>Вода</label>
+            <div class="options" data-type="radio" data-name="food_water">
+              <label class="chip"><input type="radio" name="food_water" value="Норма"><span>Норма</span></label>
+              <label class="chip"><input type="radio" name="food_water" value="Мало"><span>Мало</span></label>
+            </div>
+          </div>
+
+          <div>
+            <label>Овощи/Зелень</label>
+            <div class="options" data-type="radio" data-name="food_veggies">
+              <label class="chip"><input type="radio" name="food_veggies" value="Много"><span>Много</span></label>
+              <label class="chip"><input type="radio" name="food_veggies" value="Средне"><span>Средне</span></label>
+              <label class="chip"><input type="radio" name="food_veggies" value="Мало"><span>Мало</span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="card">
+        <h2>Информация</h2>
+
+        <div class="row two">
+          <div>
+            <label>Книги</label>
+            <div class="options">
+              <label class="chip"><input type="checkbox" id="info_books"><span>Да</span></label>
+            </div>
+          </div>
+
+          <div>
+            <label>Телефон/Соцсети</label>
+            <div class="options" data-type="radio" data-name="info_phone_social">
+              <label class="chip"><input type="radio" name="info_phone_social" value="Много"><span>Много</span></label>
+              <label class="chip"><input type="radio" name="info_phone_social" value="Средне"><span>Средне</span></label>
+              <label class="chip"><input type="radio" name="info_phone_social" value="Мало"><span>Мало</span></label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="card">
+        <h2>Результат</h2>
+
+        <div class="row three">
+          <div>
+            <label>Работоспособность</label>
+            <select id="result_workability">
+              <option value="" selected>—</option>
+              <option value="Выс">Выс</option>
+              <option value="Сред">Сред</option>
+              <option value="Низ">Низ</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Тонус тела</label>
+            <select id="result_body_tone">
+              <option value="" selected>—</option>
+              <option value="Выс">Выс</option>
+              <option value="Сред">Сред</option>
+              <option value="Низ">Низ</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Здоровье</label>
+            <select id="result_health">
+              <option value="" selected>—</option>
+              <option value="Не болею">Не болею</option>
+              <option value="На грани">На грани</option>
+              <option value="Болею">Болею</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>Ощущения (можно несколько)</label>
+            <div class="options" id="feelings_box">
+              <label class="chip"><input type="checkbox" value="Покой"><span>Покой</span></label>
+              <label class="chip"><input type="checkbox" value="Тревога"><span>Тревога</span></label>
+              <label class="chip"><input type="checkbox" value="Раздражение"><span>Раздражение</span></label>
+              <label class="chip"><input type="checkbox" value="Радость"><span>Радость</span></label>
+              <label class="chip"><input type="checkbox" value="Апатия"><span>Апатия</span></label>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>Комментарий</label>
+            <textarea id="comment" placeholder="Коротко: что важно отметить"></textarea>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="footer">
+      <button class="btn" id="btn_close" type="button">Закрыть</button>
+      <button class="btn primary" id="btn_send" type="button">Отправить</button>
+    </div>
+    <div class="hint">Если кнопка “Отправить” неактивна в клиенте Telegram, обновите приложение.</div>
+  </div>
+
+<script>
+  const tg = window.Telegram.WebApp;
+  tg.expand();
+
+  function getRadioValue(name){
+    const el = document.querySelector(`input[type="radio"][name="${name}"]:checked`);
+    return el ? el.value : "";
+  }
+
+  function getCheckbox(id){
+    const el = document.getElementById(id);
+    return !!(el && el.checked);
+  }
+
+  function getSelect(id){
+    const el = document.getElementById(id);
+    return el ? el.value : "";
+  }
+
+  function getFeelings(){
+    const box = document.getElementById("feelings_box");
+    const checked = box.querySelectorAll('input[type="checkbox"]:checked');
+    return Array.from(checked).map(x => x.value);
+  }
+
+  document.getElementById("btn_send").addEventListener("click", () => {
+    const data = {
+      // Вера
+      faith_prayer: getRadioValue("faith_prayer"),
+      faith_temple: getRadioValue("faith_temple"),
+      faith_communion: getCheckbox("faith_communion"),
+
+      // Физкультура
+      fitness_walk: getSelect("fitness_walk"),
+      fitness_warmup: getCheckbox("fitness_warmup"),
+      fitness_extra_activity: getCheckbox("fitness_extra_activity"),
+      fitness_training: getCheckbox("fitness_training"),
+
+      // Сон
+      sleep_duration: getSelect("sleep_duration"),
+      sleep_quality: getRadioValue("sleep_quality"),
+
+      // Питание
+      food_snacks: getRadioValue("food_snacks"),
+      food_fastfood: getRadioValue("food_fastfood"),
+      food_4meals: getCheckbox("food_4meals"),
+      food_sweets: getRadioValue("food_sweets"),
+      food_water: getRadioValue("food_water"),
+      food_veggies: getRadioValue("food_veggies"),
+
+      // Информация
+      info_books: getCheckbox("info_books"),
+      info_phone_social: getRadioValue("info_phone_social"),
+
+      // Результат
+      result_workability: getSelect("result_workability"),
+      result_body_tone: getSelect("result_body_tone"),
+      result_health: getSelect("result_health"),
+      result_feelings: getFeelings(),
+
+      // Комментарий
+      comment: (document.getElementById("comment").value || "").trim()
+    };
+
+    tg.sendData(JSON.stringify(data));
+    tg.close();
+  });
+
+  document.getElementById("btn_close").addEventListener("click", () => tg.close());
+</script>
+</body>
+</html>
